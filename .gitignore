@@ -1,0 +1,19 @@
+# Ignore all PDF files
+*.pdf
+pdfs/
+
+# Ignore environment and secrets
+.env
+
+# Ignore output files
+*.xlsx
+*.json
+*.log
+
+# Ignore common unnecessary local/system files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+*.bak
+__pycache__/
