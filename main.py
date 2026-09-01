@@ -17,16 +17,23 @@ logger = logging.getLogger(__name__)
 
 
 def print_report(data: dict, source: str):
+    def fmt(val, is_str=False):
+        if val is None or val == "No encontrado":
+            return "No encontrado"
+        if is_str and str(val).strip() == "":
+            return "No encontrado"
+        return val
+
     print("\n" + "=" * 60)
     print(f"  ANALYSIS RESULT")
     print(f"  Source: {Path(source).name}")
     print("=" * 60)
-    print(f"  Carrera:                {data.get('Carrera', 'N/A')}")
-    print(f"  Nombre del Proyecto:    {data.get('Nombre del Proyecto', 'N/A')}")
-    print(f"  Código del Proyecto:    {data.get('Código del Proyecto', 'N/A')}")
+    print(f"  Carrera:                {fmt(data.get('Carrera'), True)}")
+    print(f"  Nombre del Proyecto:    {fmt(data.get('Nombre del Proyecto'), True)}")
+    print(f"  Código del Proyecto:    {fmt(data.get('Código del Proyecto'), True)}")
     print("-" * 60)
-    print(f"  Beneficiarios Directos: {data.get('Beneficiarios Directos', 'N/A')}")
-    print(f"  Beneficiarios Indirectos: {data.get('Beneficiarios Indirectos', 'N/A')}")
+    print(f"  Beneficiarios Directos: {data.get('Beneficiarios Directos', 0)}")
+    print(f"  Beneficiarios Indirectos: {data.get('Beneficiarios Indirectos', 0)}")
     print("-" * 60)
     print(f"  Total Mujeres:          {data.get('Total Mujeres', 0)}")
     print(f"  Total Hombres:          {data.get('Total Hombres', 0)}")

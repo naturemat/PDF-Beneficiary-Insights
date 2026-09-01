@@ -95,7 +95,6 @@ def _find_numeric_near(text: str, label: str) -> int | None:
     patterns = [
         re.compile(label + r"\s+(\d+)", re.IGNORECASE),
         re.compile(label + r"\s*:\s*(\d+)", re.IGNORECASE),
-        re.compile(label + r"[^\d]*(\d+)", re.IGNORECASE),
     ]
     for pat in patterns:
         match = pat.search(text)
@@ -112,11 +111,11 @@ def _find_numeric_after(text: str, label: str) -> int | None:
     if not match:
         return None
     after = text[match.end():]
-    num_match = re.search(r"[\d.,]+", after[:300])
+    first_line = after.split("\n")[0].strip()
+    num_match = re.search(r"^\s*(\d+)", first_line)
     if num_match:
-        raw = num_match.group().replace(",", "").replace(".", "")
         try:
-            return int(raw)
+            return int(num_match.group(1))
         except ValueError:
             return None
     return None
@@ -185,9 +184,17 @@ def _parse_codigo(text: str) -> str:
         if code:
             return code.group(1)
 
+    match = re.search(r"(?i)c[oó]digo\s+del\s+proyecto.*?P(\d+[A-Z]+\d+)", text, re.DOTALL)
+    if match:
+        return "P" + match.group(1)
+
     match = re.search(r"P\d{2}[A-Z]{2,}\d{2,}", text)
     if match:
         return match.group(0)
+
+    match = re.search(r"(?i)c[oó]digo.*?(P\d+\w+)", text, re.DOTALL)
+    if match:
+        return match.group(1)
 
     return NOT_FOUND
 
@@ -225,7 +232,7 @@ def _parse_beneficiarios_indirectos(text: str) -> int:
         if val is not None:
             return val
 
-    match = re.search(r"(?i)indirectos\s*\n?\s*(\d+)", text)
+    match = re.search(r"(?i)BENEFICIARIOS\s+INDIRECTOS\s*\n\s*(\d+)", text)
     if match:
         return int(match.group(1))
 
@@ -399,7 +406,10 @@ def _find_report_pages(pages: dict[int, str]) -> list[int]:
     for page_num, text in pages.items():
         if re.search(r"(?i)DATOS\s+GENERALES", text):
             report_starts.append(page_num)
-    return report_starts
+        elif re.search(r"(?i)Carrera\s*:", text) and re.search(r"(?i)Proyecto\s*:", text):
+            if page_num not in report_starts:
+                report_starts.append(page_num)
+    return sorted(report_starts)
 
 
 def _extract_single_report(pages: dict[int, str], start_page: int, end_page: int) -> dict:
